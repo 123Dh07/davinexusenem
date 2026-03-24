@@ -51,7 +51,7 @@ const Index = () => {
 
       {/* Axes */}
       <main className="max-w-4xl mx-auto px-6 pb-24">
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {thematicAxes.map((axis, i) => (
             <ThematicAxisCard key={axis.id} axis={axis} index={i} />
           ))}
