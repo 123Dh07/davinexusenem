@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { Topic } from "@/data/enemData";
-import { ParagraphModel } from "./ParagraphModel";
+import { RepertoireTable } from "./RepertoireTable";
 import { cn } from "@/lib/utils";
 
 interface TopicCardProps {
@@ -46,10 +46,8 @@ export function TopicCard({ topic, index }: TopicCardProps) {
       </button>
 
       {isOpen && (
-        <div className="p-4 space-y-4 animate-fade-in bg-secondary/20">
-          {topic.repertoires.map((rep, i) => (
-            <ParagraphModel key={i} repertoire={rep} />
-          ))}
+        <div className="animate-fade-in bg-secondary/20">
+          <RepertoireTable repertoires={topic.repertoires} />
         </div>
       )}
     </div>
