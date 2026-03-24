@@ -20,20 +20,23 @@ export function ThematicAxisCard({ axis, index }: ThematicAxisCardProps) {
 
   return (
     <div
-      className={cn(
-        "glass-card-hover overflow-hidden opacity-0 animate-fade-in"
-      )}
-      style={{ animationDelay: `${index * 100}ms` }}
+      className="opacity-0 animate-fade-in"
+      style={{ animationDelay: `${index * 80}ms` }}
     >
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-6 text-left"
+        className={cn(
+          "w-full flex items-center justify-between p-6 rounded-2xl",
+          "bg-card border border-border/60 transition-all duration-300",
+          "hover:border-primary/50 hover:shadow-[0_0_20px_-4px_hsl(var(--primary)/0.15)]",
+          isOpen && "border-primary/40 rounded-b-none"
+        )}
       >
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
             <Icon className="w-6 h-6 text-primary" />
           </div>
-          <div>
+          <div className="text-left">
             <h2 className="font-display text-xl font-bold text-foreground">
               {axis.name}
             </h2>
@@ -44,14 +47,14 @@ export function ThematicAxisCard({ axis, index }: ThematicAxisCardProps) {
         </div>
         <ChevronDown
           className={cn(
-            "w-6 h-6 text-muted-foreground transition-transform duration-300",
+            "w-5 h-5 text-muted-foreground transition-transform duration-300",
             isOpen && "rotate-180"
           )}
         />
       </button>
 
       {isOpen && (
-        <div className="px-6 pb-6 space-y-3 animate-fade-in">
+        <div className="bg-card border border-t-0 border-border/60 border-primary/40 rounded-b-2xl px-6 pb-6 pt-4 space-y-3 animate-fade-in">
           {axis.topics.map((topic, i) => (
             <TopicCard key={i} topic={topic} index={i} />
           ))}

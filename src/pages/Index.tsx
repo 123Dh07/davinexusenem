@@ -12,10 +12,10 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border/50 backdrop-blur-xl bg-background/80 sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <header className="border-b border-border/40 bg-background/90 backdrop-blur-lg sticky top-0 z-50">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-primary" />
             </div>
             <div>
@@ -27,33 +27,31 @@ const Index = () => {
               </p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-4 font-mono text-xs text-muted-foreground">
-            <span>{thematicAxes.length} eixos</span>
-            <span className="w-px h-3 bg-border" />
-            <span>{totalTopics} temas</span>
-            <span className="w-px h-3 bg-border" />
-            <span>{totalRepertoires} repertórios</span>
+          <div className="hidden sm:flex items-center gap-3 font-mono text-xs text-muted-foreground">
+            <span className="px-2 py-1 rounded-md bg-secondary">{thematicAxes.length} eixos</span>
+            <span className="px-2 py-1 rounded-md bg-secondary">{totalTopics} temas</span>
+            <span className="px-2 py-1 rounded-md bg-secondary">{totalRepertoires} repertórios</span>
           </div>
         </div>
       </header>
 
       {/* Hero */}
-      <section className="max-w-5xl mx-auto px-6 pt-16 pb-12">
+      <section className="max-w-4xl mx-auto px-6 pt-16 pb-14">
         <div className="space-y-4 max-w-2xl">
-          <h2 className="font-display text-4xl sm:text-5xl font-bold text-foreground tracking-tight leading-tight">
+          <h2 className="font-display text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight leading-[1.1] text-balance">
             Seu arsenal para a{" "}
             <span className="text-gradient">nota 1000</span>
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          <p className="text-lg text-muted-foreground leading-relaxed max-w-xl">
             Repertórios socioculturais organizados por eixo temático, com modelos
             de parágrafos prontos para usar na sua redação.
           </p>
         </div>
       </section>
 
-      {/* Axes Grid */}
-      <main className="max-w-5xl mx-auto px-6 pb-20">
-        <div className="grid gap-4">
+      {/* Axes */}
+      <main className="max-w-4xl mx-auto px-6 pb-24">
+        <div className="space-y-4">
           {thematicAxes.map((axis, i) => (
             <ThematicAxisCard key={axis.id} axis={axis} index={i} />
           ))}
@@ -61,13 +59,13 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-6">
-        <div className="max-w-5xl mx-auto px-6 flex items-center justify-between">
+      <footer className="border-t border-border/30 py-8">
+        <div className="max-w-4xl mx-auto px-6 flex items-center justify-between">
           <p className="font-mono text-xs text-muted-foreground">
             Nexus ENEM · Banco de Repertórios
           </p>
           <p className="font-mono text-xs text-muted-foreground">
-            Prepare-se com excelência
+            Prepare-se com excelência 🚀
           </p>
         </div>
       </footer>
