@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Copy, Check } from "lucide-react";
+import { ChevronDown, Copy, Check, Quote } from "lucide-react";
 import { Repertoire, categoryLabels } from "@/data/enemData";
 import { cn } from "@/lib/utils";
 
@@ -22,44 +22,46 @@ export function ParagraphModel({ repertoire }: ParagraphModelProps) {
 
   return (
     <div className={cn(
-      "rounded-xl border border-border/50 bg-card/80 overflow-hidden transition-all duration-300",
-      "hover:border-primary/30"
+      "rounded-xl bg-card border border-border/40 overflow-hidden transition-all duration-300",
+      "hover:border-primary/25"
     )}>
-      {/* Header */}
-      <div className="p-4 space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-lg leading-none">{cat.emoji}</span>
-          <span className="font-display text-xs font-bold uppercase tracking-wider text-primary">
-            {cat.label}
-          </span>
+      {/* Top row: category badge + title */}
+      <div className="p-4 pb-3">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl leading-none mt-0.5">{cat.emoji}</span>
+          <div className="flex-1 min-w-0">
+            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.15em] text-primary mb-1">
+              {cat.label}
+            </span>
+            <h4 className="font-display font-bold text-foreground text-[15px] leading-snug">
+              {repertoire.title}
+            </h4>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+              {repertoire.description}
+            </p>
+          </div>
         </div>
-        <h4 className="font-display font-bold text-foreground text-base">
-          {repertoire.title}
-        </h4>
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {repertoire.description}
-        </p>
       </div>
 
       {/* Como usar */}
-      <div className="mx-4 mb-3 p-3 rounded-lg bg-surface-alt/60 border border-border/30">
-        <p className="text-[11px] font-mono font-medium text-accent uppercase tracking-wider mb-1">
-          ➡️ Como usar
+      <div className="mx-4 mb-3 px-3 py-2.5 rounded-lg bg-accent/5 border border-accent/10">
+        <p className="text-[10px] font-mono font-bold text-accent uppercase tracking-[0.15em] mb-0.5">
+          Como usar
         </p>
-        <p className="text-sm text-muted-foreground leading-relaxed">
+        <p className="text-[13px] text-muted-foreground leading-relaxed">
           {repertoire.howToUse}
         </p>
       </div>
 
-      {/* Toggle parágrafo */}
+      {/* Ver parágrafo toggle */}
       <div className="px-4 pb-4">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-primary hover:text-primary/80 transition-colors"
         >
           <ChevronDown
             className={cn(
-              "w-4 h-4 transition-transform duration-300",
+              "w-3.5 h-3.5 transition-transform duration-300",
               isOpen && "rotate-180"
             )}
           />
@@ -68,13 +70,17 @@ export function ParagraphModel({ repertoire }: ParagraphModelProps) {
 
         {isOpen && (
           <div className="mt-3 animate-fade-in">
-            <div className="relative p-4 rounded-lg bg-primary/5 border border-primary/20">
-              <p className="text-sm leading-relaxed text-foreground/90 pr-10 italic">
-                "{repertoire.paragraphModel}"
+            <div className="relative p-4 rounded-xl bg-primary/[0.04] border border-primary/15">
+              <Quote className="w-4 h-4 text-primary/30 mb-2" />
+              <p className="text-[13px] leading-[1.8] text-foreground/85 pr-10">
+                {repertoire.paragraphModel}
               </p>
               <button
                 onClick={handleCopy}
-                className="absolute top-3 right-3 p-2 rounded-lg hover:bg-primary/10 transition-all"
+                className={cn(
+                  "absolute top-3 right-3 p-2 rounded-lg transition-all",
+                  copied ? "bg-accent/10" : "hover:bg-primary/10"
+                )}
                 title="Copiar parágrafo"
               >
                 {copied ? (
