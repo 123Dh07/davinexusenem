@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ["DM Sans", "system-ui", "sans-serif"],
-        display: ["Space Grotesk", "system-ui", "sans-serif"],
+        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Inter", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
       colors: {
@@ -52,10 +52,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        surface: {
-          DEFAULT: "hsl(var(--surface))",
-          alt: "hsl(var(--surface-alt))",
-        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -82,14 +78,24 @@ export default {
           to: { height: "0" },
         },
         "fade-in": {
-          from: { opacity: "0", transform: "translateY(8px)" },
+          from: { opacity: "0", transform: "translateY(12px)", filter: "blur(4px)" },
+          to: { opacity: "1", transform: "translateY(0)", filter: "blur(0)" },
+        },
+        "fade-in-scale": {
+          from: { opacity: "0", transform: "scale(0.96)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
+        "slide-up": {
+          from: { opacity: "0", transform: "translateY(20px)" },
           to: { opacity: "1", transform: "translateY(0)" },
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
-        "accordion-up": "accordion-up 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
-        "fade-in": "fade-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        "accordion-down": "accordion-down 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        "accordion-up": "accordion-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+        "fade-in": "fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "fade-in-scale": "fade-in-scale 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
+        "slide-up": "slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards",
       },
     },
   },

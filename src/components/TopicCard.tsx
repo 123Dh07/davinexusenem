@@ -13,32 +13,29 @@ export function TopicCard({ topic, index }: TopicCardProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="rounded-xl border border-border/40 overflow-hidden transition-all duration-300 hover:border-primary/20">
+    <div className={cn(
+      "rounded-xl border border-border/40 overflow-hidden transition-all duration-300",
+      isOpen ? "bg-secondary/40 border-primary/15" : "hover:border-border/70 hover:bg-secondary/20"
+    )}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={cn(
-          "w-full flex items-center justify-between p-4 text-left transition-colors",
-          "hover:bg-secondary/50",
-          isOpen && "bg-secondary/40 border-b border-border/30"
-        )}
+        className="w-full flex items-center justify-between p-4 text-left transition-colors active:scale-[0.995]"
       >
         <div className="flex items-center gap-3">
-          <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="font-mono text-xs text-primary font-bold tabular-nums">
-              {index + 1}
-            </span>
-          </div>
-          <h3 className="font-display font-semibold text-foreground text-sm sm:text-[15px]">
+          <span className="font-mono text-[11px] text-primary/60 font-semibold tabular-nums w-5">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <h3 className="font-semibold text-foreground text-[14px] tracking-tight">
             {topic.name}
           </h3>
         </div>
-        <div className="flex items-center gap-2 shrink-0 ml-2">
-          <span className="text-[11px] text-muted-foreground font-medium px-2 py-0.5 rounded-full bg-muted/40">
-            {topic.repertoires.length} repertórios
+        <div className="flex items-center gap-2.5 shrink-0 ml-2">
+          <span className="text-[11px] text-muted-foreground font-mono">
+            {topic.repertoires.length} rep.
           </span>
           <ChevronRight
             className={cn(
-              "w-4 h-4 text-muted-foreground transition-transform duration-300",
+              "w-3.5 h-3.5 text-muted-foreground transition-transform duration-300",
               isOpen && "rotate-90"
             )}
           />
@@ -46,7 +43,7 @@ export function TopicCard({ topic, index }: TopicCardProps) {
       </button>
 
       {isOpen && (
-        <div className="animate-fade-in bg-secondary/20">
+        <div className="animate-fade-in border-t border-border/30">
           <RepertoireTable repertoires={topic.repertoires} />
         </div>
       )}
