@@ -1,5 +1,10 @@
-import { BookOpen, Target, Lightbulb, PenTool, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { BookOpen, Target, Lightbulb, PenTool, CheckCircle2, ChevronDown, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+interface IntroSectionProps {
+  onGoToRepertorios: () => void;
+}
 
 const steps = [
   {
@@ -35,14 +40,50 @@ const steps = [
 ];
 
 const competencias = [
-  { num: "I", label: "Domínio da norma culta", points: "200 pts" },
-  { num: "II", label: "Compreensão da proposta", points: "200 pts" },
-  { num: "III", label: "Argumentação", points: "200 pts" },
-  { num: "IV", label: "Coesão textual", points: "200 pts" },
-  { num: "V", label: "Proposta de intervenção", points: "200 pts" },
+  {
+    num: "I",
+    label: "Domínio da norma culta",
+    points: "200 pts",
+    details:
+      "Avalia o uso correto da gramática, ortografia, acentuação e pontuação. Evite gírias, coloquialismos e erros de concordância. Escreva com clareza e formalidade.",
+  },
+  {
+    num: "II",
+    label: "Compreensão da proposta",
+    points: "200 pts",
+    details:
+      "Verifica se você entendeu o tema proposto e se manteve o texto dissertativo-argumentativo. Não fuja do tema e use os textos motivadores como ponto de partida, não como cópia.",
+  },
+  {
+    num: "III",
+    label: "Argumentação",
+    points: "200 pts",
+    details:
+      "Avalia a qualidade dos seus argumentos e o uso de repertórios socioculturais (dados, filósofos, leis, filmes). Seus argumentos devem ser coerentes e bem desenvolvidos.",
+  },
+  {
+    num: "IV",
+    label: "Coesão textual",
+    points: "200 pts",
+    details:
+      "Verifica o uso de conectivos e a ligação entre parágrafos e ideias. Use expressões como 'além disso', 'nesse sentido', 'portanto' para guiar a leitura.",
+  },
+  {
+    num: "V",
+    label: "Proposta de intervenção",
+    points: "200 pts",
+    details:
+      "Deve conter 5 elementos: agente (quem vai fazer), ação (o que vai ser feito), meio (como), finalidade (para quê) e detalhamento (aprofundamento de qualquer elemento). É a competência mais decisiva.",
+  },
 ];
 
-export function IntroSection() {
+export function IntroSection({ onGoToRepertorios }: IntroSectionProps) {
+  const [openComp, setOpenComp] = useState<number | null>(null);
+
+  const toggleComp = (i: number) => {
+    setOpenComp(openComp === i ? null : i);
+  };
+
   return (
     <div className="space-y-16">
       {/* Hero intro */}
@@ -65,30 +106,51 @@ export function IntroSection() {
         </p>
       </div>
 
-      {/* Competências grid */}
+      {/* Competências - accordion */}
       <div className="opacity-0 animate-fade-in" style={{ animationDelay: "150ms" }}>
         <h3 className="text-xs font-mono font-semibold text-primary/60 uppercase tracking-widest text-center mb-6">
           As 5 Competências do ENEM
         </h3>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div className="max-w-2xl mx-auto space-y-2">
           {competencias.map((c, i) => (
             <div
               key={i}
               className={cn(
-                "flex flex-col items-center gap-2 p-4 rounded-xl",
-                "bg-card border border-border/50",
-                "hover:border-primary/30 transition-all duration-300"
+                "rounded-xl border overflow-hidden transition-all duration-300",
+                openComp === i
+                  ? "bg-card border-primary/25"
+                  : "bg-card border-border/50 hover:border-border/80"
               )}
             >
-              <span className="text-2xl font-extrabold text-primary/80 font-mono">
-                {c.num}
-              </span>
-              <p className="text-[12px] text-center text-foreground/80 font-medium leading-tight">
-                {c.label}
-              </p>
-              <span className="text-[10px] font-mono text-accent font-semibold">
-                {c.points}
-              </span>
+              <button
+                onClick={() => toggleComp(i)}
+                className="w-full flex items-center gap-4 p-4 text-left active:scale-[0.998] transition-colors"
+              >
+                <span className="text-xl font-extrabold text-primary/70 font-mono w-8 text-center shrink-0">
+                  {c.num}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-[14px] text-foreground tracking-tight">
+                    {c.label}
+                  </p>
+                </div>
+                <span className="text-[11px] font-mono text-accent font-semibold shrink-0 mr-2">
+                  {c.points}
+                </span>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 text-muted-foreground/60 shrink-0 transition-transform duration-300",
+                    openComp === i && "rotate-180"
+                  )}
+                />
+              </button>
+              {openComp === i && (
+                <div className="px-4 pb-4 pl-16 animate-fade-in">
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                    {c.details}
+                  </p>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -176,6 +238,28 @@ export function IntroSection() {
               </span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* CTA to repertórios */}
+      <div className="opacity-0 animate-fade-in" style={{ animationDelay: "600ms" }}>
+        <div className="max-w-2xl mx-auto text-center space-y-4 py-8">
+          <p className="text-muted-foreground text-[14px]">
+            Agora que você sabe como funciona, explore repertórios prontos,
+            exemplos de parágrafos e modelos de redação.
+          </p>
+          <button
+            onClick={onGoToRepertorios}
+            className={cn(
+              "inline-flex items-center gap-2 px-6 py-3 rounded-xl",
+              "bg-primary text-primary-foreground font-semibold text-[14px]",
+              "hover:brightness-110 active:scale-[0.97] transition-all duration-200",
+              "shadow-[0_0_30px_-8px_hsl(217_91%_60%_/_0.4)]"
+            )}
+          >
+            Ver repertórios e exemplos
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </div>
