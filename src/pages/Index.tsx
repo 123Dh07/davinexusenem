@@ -81,7 +81,7 @@ const Index = () => {
       {/* Content */}
       <main className="max-w-5xl mx-auto px-6 py-16 relative">
         {activeTab === "intro" ? (
-          <IntroSection />
+          <IntroSection onGoToRepertorios={() => setActiveTab("repertorios")} />
         ) : (
           <div className="space-y-8">
             <div className="text-center max-w-xl mx-auto space-y-4 opacity-0 animate-fade-in">
