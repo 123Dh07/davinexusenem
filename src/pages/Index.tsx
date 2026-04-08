@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ThematicAxisCard } from "@/components/ThematicAxisCard";
 import { IntroSection } from "@/components/IntroSection";
 import { thematicAxes } from "@/data/enemData";
-import { Zap, BookOpen, LayoutGrid } from "lucide-react";
+import { BookOpen, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Tab = "intro" | "repertorios";
@@ -29,11 +29,13 @@ const Index = () => {
 
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-xl sticky top-0 z-40">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-primary" />
-            </div>
+            <img
+              src="/davinexusenem/logo.png"
+              alt="Logo Davi e Zeca"
+              className="h-10 w-auto object-contain"
+            />
             <span className="font-semibold text-foreground tracking-tight text-[15px]">
               Nexus ENEM
             </span>
