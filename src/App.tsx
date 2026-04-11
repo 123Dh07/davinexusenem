@@ -14,7 +14,7 @@ const Login = ({ onLogin }: { onLogin: () => void }) => {
   const [erro, setErro] = useState(false);
 
   const handleLogin = () => {
-    if (senha === "daviezeca123") {
+    if (senha === "davizeca2026") {
       localStorage.setItem("nexus_auth", "true");
       onLogin();
     } else {
