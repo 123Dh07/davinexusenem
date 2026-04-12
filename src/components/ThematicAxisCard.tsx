@@ -9,17 +9,24 @@ interface ThematicAxisCardProps {
   index: number;
   favoritos: string[];
   onToggleFavorito: (id: string) => void;
+  estudados: string[];
+  onToggleEstudado: (id: string) => void;
   axisId: string;
 }
 
-export function ThematicAxisCard({ axis, index, favoritos, onToggleFavorito, axisId }: ThematicAxisCardProps) {
+export function ThematicAxisCard({ axis, index, favoritos, onToggleFavorito, estudados, onToggleEstudado, axisId }: ThematicAxisCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const Icon = axis.icon;
 
-  const totalRepertoires = axis.topics.reduce(
-    (acc, t) => acc + t.repertoires.length,
-    0
+  const totalRepertoires = axis.topics.reduce((acc, t) => acc + t.repertoires.length, 0);
+
+  const estudadosNoAxis = axis.topics.reduce((acc, topic, ti) =>
+    acc + topic.repertoires.filter((_, i) =>
+      estudados.includes(`${axis.id}-${topic.name}-${i}`)
+    ).length, 0
   );
+
+  const progresso = totalRepertoires > 0 ? Math.round((estudadosNoAxis / totalRepertoires) * 100) : 0;
 
   return (
     <>
@@ -37,16 +44,29 @@ export function ThematicAxisCard({ axis, index, favoritos, onToggleFavorito, axi
         )}
         style={{ animationDelay: `${index * 80}ms` }}
       >
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center transition-all duration-300 group-hover:bg-primary/15 group-hover:shadow-[0_0_20px_-4px_hsl(217_91%_60%_/_0.2)]">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center transition-all duration-300 group-hover:bg-primary/15">
           <Icon className="w-5 h-5 text-primary" />
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 w-full">
           <h2 className="font-semibold text-foreground text-[15px] leading-snug tracking-tight">
             {axis.name}
           </h2>
           <p className="font-mono text-[11px] text-muted-foreground">
             {axis.topics.length} temas · {totalRepertoires} rep.
           </p>
+          {/* Barra de progresso */}
+          <div className="w-full mt-2">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-[10px] font-mono text-muted-foreground">Progresso</span>
+              <span className="text-[10px] font-mono text-green-400 font-semibold">{progresso}%</span>
+            </div>
+            <div className="w-full h-1 bg-secondary rounded-full overflow-hidden">
+              <div
+                className="h-full bg-green-400 rounded-full transition-all duration-500"
+                style={{ width: `${progresso}%` }}
+              />
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-1 text-[12px] font-medium text-primary/70 group-hover:text-primary transition-colors mt-auto">
           Explorar
@@ -73,7 +93,7 @@ export function ThematicAxisCard({ axis, index, favoritos, onToggleFavorito, axi
                     {axis.name}
                   </h2>
                   <p className="font-mono text-[11px] text-muted-foreground mt-0.5">
-                    {axis.topics.length} temas · {totalRepertoires} repertórios
+                    {axis.topics.length} temas · {totalRepertoires} repertórios · {progresso}% concluído
                   </p>
                 </div>
               </div>
@@ -85,6 +105,16 @@ export function ThematicAxisCard({ axis, index, favoritos, onToggleFavorito, axi
               </button>
             </div>
 
+            {/* Barra de progresso no modal */}
+            <div className="px-5 pt-3">
+              <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-green-400 rounded-full transition-all duration-500"
+                  style={{ width: `${progresso}%` }}
+                />
+              </div>
+            </div>
+
             <div className="p-5 space-y-3">
               {axis.topics.map((topic, i) => (
                 <TopicCard
@@ -93,6 +123,8 @@ export function ThematicAxisCard({ axis, index, favoritos, onToggleFavorito, axi
                   index={i}
                   favoritos={favoritos}
                   onToggleFavorito={onToggleFavorito}
+                  estudados={estudados}
+                  onToggleEstudado={onToggleEstudado}
                   axisId={axisId}
                 />
               ))}

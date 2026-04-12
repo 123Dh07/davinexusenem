@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ThematicAxisCard } from "@/components/ThematicAxisCard";
 import { IntroSection } from "@/components/IntroSection";
 import { thematicAxes } from "@/data/enemData";
-import { BookOpen, LayoutGrid, Search, Heart } from "lucide-react";
+import { BookOpen, LayoutGrid, Search, Heart, BookCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Tab = "intro" | "repertorios" | "favoritos";
@@ -10,8 +10,14 @@ type Tab = "intro" | "repertorios" | "favoritos";
 const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("intro");
   const [busca, setBusca] = useState("");
+
   const [favoritos, setFavoritos] = useState<string[]>(() => {
     const saved = localStorage.getItem("nexus_favoritos");
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [estudados, setEstudados] = useState<string[]>(() => {
+    const saved = localStorage.getItem("nexus_estudados");
     return saved ? JSON.parse(saved) : [];
   });
 
@@ -23,11 +29,22 @@ const Index = () => {
     });
   };
 
+  const toggleEstudado = (id: string) => {
+    setEstudados(prev => {
+      const novos = prev.includes(id) ? prev.filter(e => e !== id) : [...prev, id];
+      localStorage.setItem("nexus_estudados", JSON.stringify(novos));
+      return novos;
+    });
+  };
+
   const totalTopics = thematicAxes.reduce((acc, a) => acc + a.topics.length, 0);
   const totalRepertoires = thematicAxes.reduce(
-    (acc, a) => acc + a.topics.reduce((t, topic) => t + topic.repertoires.length, 0),
-    0
+    (acc, a) => acc + a.topics.reduce((t, topic) => t + topic.repertoires.length, 0), 0
   );
+
+  const progressoGeral = totalRepertoires > 0
+    ? Math.round((estudados.length / totalRepertoires) * 100)
+    : 0;
 
   const axesFiltrados = busca.trim() === "" ? thematicAxes : thematicAxes.map(axis => ({
     ...axis,
@@ -121,15 +138,34 @@ const Index = () => {
             </button>
           </div>
 
-          <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-            <span className="px-2.5 py-1 rounded-md bg-secondary">
-              {thematicAxes.length} eixos
-            </span>
-            <span className="px-2.5 py-1 rounded-md bg-secondary">
-              {totalTopics} temas
-            </span>
+          {/* Progresso geral */}
+          <div className="hidden sm:flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+              <span className="px-2.5 py-1 rounded-md bg-secondary">
+                {thematicAxes.length} eixos
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-secondary">
+                {totalTopics} temas
+              </span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-green-500/10 border border-green-500/20">
+              <BookCheck className="w-3.5 h-3.5 text-green-400" />
+              <span className="text-[12px] font-mono font-semibold text-green-400">
+                {progressoGeral}% estudado
+              </span>
+            </div>
           </div>
         </div>
+
+        {/* Barra de progresso geral */}
+        {estudados.length > 0 && (
+          <div className="w-full h-0.5 bg-secondary">
+            <div
+              className="h-full bg-green-400 transition-all duration-500"
+              style={{ width: `${progressoGeral}%` }}
+            />
+          </div>
+        )}
       </header>
 
       {/* Content */}
@@ -155,7 +191,16 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {axesFavoritos.map((axis, i) => (
-                  <ThematicAxisCard key={axis.id} axis={axis} index={i} favoritos={favoritos} onToggleFavorito={toggleFavorito} axisId={axis.id} />
+                  <ThematicAxisCard
+                    key={axis.id}
+                    axis={axis}
+                    index={i}
+                    favoritos={favoritos}
+                    onToggleFavorito={toggleFavorito}
+                    estudados={estudados}
+                    onToggleEstudado={toggleEstudado}
+                    axisId={axis.id}
+                  />
                 ))}
               </div>
             )}
@@ -191,7 +236,16 @@ const Index = () => {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {axesFiltrados.map((axis, i) => (
-                  <ThematicAxisCard key={axis.id} axis={axis} index={i} favoritos={favoritos} onToggleFavorito={toggleFavorito} axisId={axis.id} />
+                  <ThematicAxisCard
+                    key={axis.id}
+                    axis={axis}
+                    index={i}
+                    favoritos={favoritos}
+                    onToggleFavorito={toggleFavorito}
+                    estudados={estudados}
+                    onToggleEstudado={toggleEstudado}
+                    axisId={axis.id}
+                  />
                 ))}
               </div>
             )}

@@ -9,11 +9,17 @@ interface TopicCardProps {
   index: number;
   favoritos: string[];
   onToggleFavorito: (id: string) => void;
+  estudados: string[];
+  onToggleEstudado: (id: string) => void;
   axisId: string;
 }
 
-export function TopicCard({ topic, index, favoritos, onToggleFavorito, axisId }: TopicCardProps) {
+export function TopicCard({ topic, index, favoritos, onToggleFavorito, estudados, onToggleEstudado, axisId }: TopicCardProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  const estudadosNoTopic = topic.repertoires.filter((_, i) =>
+    estudados.includes(`${axisId}-${topic.name}-${i}`)
+  ).length;
 
   return (
     <div className={cn(
@@ -33,6 +39,11 @@ export function TopicCard({ topic, index, favoritos, onToggleFavorito, axisId }:
           </h3>
         </div>
         <div className="flex items-center gap-2.5 shrink-0 ml-2">
+          {estudadosNoTopic > 0 && (
+            <span className="text-[10px] font-mono text-green-400 font-semibold">
+              {estudadosNoTopic}/{topic.repertoires.length} estudados
+            </span>
+          )}
           <span className="text-[11px] text-muted-foreground font-mono">
             {topic.repertoires.length} rep.
           </span>
@@ -51,6 +62,8 @@ export function TopicCard({ topic, index, favoritos, onToggleFavorito, axisId }:
             repertoires={topic.repertoires}
             favoritos={favoritos}
             onToggleFavorito={onToggleFavorito}
+            estudados={estudados}
+            onToggleEstudado={onToggleEstudado}
             axisId={axisId}
             topicName={topic.name}
           />

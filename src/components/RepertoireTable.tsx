@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, Check, ChevronDown, Quote, Heart } from "lucide-react";
+import { Copy, Check, ChevronDown, Quote, Heart, BookCheck, RotateCcw } from "lucide-react";
 import { Repertoire, categoryLabels } from "@/data/enemData";
 import { cn } from "@/lib/utils";
 
@@ -7,11 +7,13 @@ interface RepertoireTableProps {
   repertoires: Repertoire[];
   favoritos: string[];
   onToggleFavorito: (id: string) => void;
+  estudados: string[];
+  onToggleEstudado: (id: string) => void;
   axisId: string;
   topicName: string;
 }
 
-export function RepertoireTable({ repertoires, favoritos, onToggleFavorito, axisId, topicName }: RepertoireTableProps) {
+export function RepertoireTable({ repertoires, favoritos, onToggleFavorito, estudados, onToggleEstudado, axisId, topicName }: RepertoireTableProps) {
   return (
     <div className="divide-y divide-border/20">
       {repertoires.map((rep, i) => (
@@ -21,17 +23,21 @@ export function RepertoireTable({ repertoires, favoritos, onToggleFavorito, axis
           favoritoId={`${axisId}-${topicName}-${i}`}
           isFavorito={favoritos.includes(`${axisId}-${topicName}-${i}`)}
           onToggleFavorito={onToggleFavorito}
+          isEstudado={estudados.includes(`${axisId}-${topicName}-${i}`)}
+          onToggleEstudado={onToggleEstudado}
         />
       ))}
     </div>
   );
 }
 
-function RepertoireRow({ repertoire, favoritoId, isFavorito, onToggleFavorito }: {
+function RepertoireRow({ repertoire, favoritoId, isFavorito, onToggleFavorito, isEstudado, onToggleEstudado }: {
   repertoire: Repertoire;
   favoritoId: string;
   isFavorito: boolean;
   onToggleFavorito: (id: string) => void;
+  isEstudado: boolean;
+  onToggleEstudado: (id: string) => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -49,24 +55,39 @@ function RepertoireRow({ repertoire, favoritoId, isFavorito, onToggleFavorito }:
     onToggleFavorito(favoritoId);
   };
 
+  const handleEstudado = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleEstudado(favoritoId);
+  };
+
   return (
-    <div>
+    <div className={cn(isEstudado && "opacity-60")}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "w-full text-left px-5 py-3.5 flex items-center gap-4 transition-colors",
           "hover:bg-primary/[0.03] active:scale-[0.998]",
-          isOpen && "bg-primary/[0.03]"
+          isOpen && "bg-primary/[0.03]",
+          isEstudado && "bg-green-500/[0.03]"
         )}
       >
+        {/* Ícone de estudado */}
+        {isEstudado && (
+          <span className="text-[10px] font-mono font-semibold text-green-400 shrink-0">✓</span>
+        )}
         <span className="text-lg leading-none shrink-0">{cat.emoji}</span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-[10px] font-mono font-semibold text-primary/60 uppercase tracking-wider">
               {cat.label}
             </span>
+            {isEstudado && (
+              <span className="text-[10px] font-mono font-semibold text-green-400 uppercase tracking-wider">
+                · Estudado
+              </span>
+            )}
           </div>
-          <p className="font-semibold text-[13px] text-foreground truncate">
+          <p className={cn("font-semibold text-[13px] text-foreground truncate", isEstudado && "line-through opacity-60")}>
             {repertoire.title}
           </p>
         </div>
@@ -137,6 +158,31 @@ function RepertoireRow({ repertoire, favoritoId, isFavorito, onToggleFavorito }:
                 <Check className="w-3.5 h-3.5" />
               ) : (
                 <Copy className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </div>
+
+          {/* Botão estudado */}
+          <div className="flex justify-end ml-9">
+            <button
+              onClick={handleEstudado}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-[13px] font-medium transition-all duration-200",
+                isEstudado
+                  ? "bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/20"
+                  : "bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20"
+              )}
+            >
+              {isEstudado ? (
+                <>
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Marcar como não estudado
+                </>
+              ) : (
+                <>
+                  <BookCheck className="w-3.5 h-3.5" />
+                  Marcar como estudado
+                </>
               )}
             </button>
           </div>
