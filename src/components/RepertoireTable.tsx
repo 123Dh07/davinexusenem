@@ -1,23 +1,38 @@
 import { useState } from "react";
-import { Copy, Check, ChevronDown, Quote } from "lucide-react";
+import { Copy, Check, ChevronDown, Quote, Heart } from "lucide-react";
 import { Repertoire, categoryLabels } from "@/data/enemData";
 import { cn } from "@/lib/utils";
 
 interface RepertoireTableProps {
   repertoires: Repertoire[];
+  favoritos: string[];
+  onToggleFavorito: (id: string) => void;
+  axisId: string;
+  topicName: string;
 }
 
-export function RepertoireTable({ repertoires }: RepertoireTableProps) {
+export function RepertoireTable({ repertoires, favoritos, onToggleFavorito, axisId, topicName }: RepertoireTableProps) {
   return (
     <div className="divide-y divide-border/20">
       {repertoires.map((rep, i) => (
-        <RepertoireRow key={i} repertoire={rep} />
+        <RepertoireRow
+          key={i}
+          repertoire={rep}
+          favoritoId={`${axisId}-${topicName}-${i}`}
+          isFavorito={favoritos.includes(`${axisId}-${topicName}-${i}`)}
+          onToggleFavorito={onToggleFavorito}
+        />
       ))}
     </div>
   );
 }
 
-function RepertoireRow({ repertoire }: { repertoire: Repertoire }) {
+function RepertoireRow({ repertoire, favoritoId, isFavorito, onToggleFavorito }: {
+  repertoire: Repertoire;
+  favoritoId: string;
+  isFavorito: boolean;
+  onToggleFavorito: (id: string) => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const cat = categoryLabels[repertoire.category];
@@ -27,6 +42,11 @@ function RepertoireRow({ repertoire }: { repertoire: Repertoire }) {
     navigator.clipboard.writeText(repertoire.paragraphModel);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleFavorito = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onToggleFavorito(favoritoId);
   };
 
   return (
@@ -53,6 +73,18 @@ function RepertoireRow({ repertoire }: { repertoire: Repertoire }) {
         <span className="text-[12px] text-muted-foreground hidden sm:block max-w-[200px] truncate">
           {repertoire.description}
         </span>
+        <button
+          onClick={handleFavorito}
+          className={cn(
+            "p-1.5 rounded-lg transition-all duration-200 shrink-0",
+            isFavorito
+              ? "text-red-400 hover:text-red-300"
+              : "text-muted-foreground/40 hover:text-red-400"
+          )}
+          title={isFavorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
+        >
+          <Heart className={cn("w-3.5 h-3.5", isFavorito && "fill-current")} />
+        </button>
         <ChevronDown
           className={cn(
             "w-3.5 h-3.5 text-muted-foreground/60 shrink-0 transition-transform duration-300",
@@ -63,7 +95,6 @@ function RepertoireRow({ repertoire }: { repertoire: Repertoire }) {
 
       {isOpen && (
         <div className="px-5 pb-4 animate-fade-in space-y-3">
-          {/* Info cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pl-9">
             <div className="p-3 rounded-lg bg-secondary/60 border border-border/30">
               <p className="text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-wider mb-1">
@@ -82,8 +113,6 @@ function RepertoireRow({ repertoire }: { repertoire: Repertoire }) {
               </p>
             </div>
           </div>
-
-          {/* Paragraph model */}
           <div className="relative p-4 rounded-xl bg-secondary/40 border border-border/30 ml-9">
             <div className="flex items-center gap-2 mb-2">
               <Quote className="w-3.5 h-3.5 text-primary/40" />

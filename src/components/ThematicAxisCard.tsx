@@ -7,9 +7,12 @@ import { cn } from "@/lib/utils";
 interface ThematicAxisCardProps {
   axis: AxisType;
   index: number;
+  favoritos: string[];
+  onToggleFavorito: (id: string) => void;
+  axisId: string;
 }
 
-export function ThematicAxisCard({ axis, index }: ThematicAxisCardProps) {
+export function ThematicAxisCard({ axis, index, favoritos, onToggleFavorito, axisId }: ThematicAxisCardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const Icon = axis.icon;
 
@@ -51,7 +54,6 @@ export function ThematicAxisCard({ axis, index }: ThematicAxisCardProps) {
         </div>
       </button>
 
-      {/* Modal */}
       {isOpen && (
         <div
           className="fixed inset-0 z-50 flex items-start justify-center bg-background/90 backdrop-blur-xl overflow-y-auto animate-fade-in"
@@ -61,7 +63,6 @@ export function ThematicAxisCard({ axis, index }: ThematicAxisCardProps) {
             className="w-full max-w-3xl my-6 mx-4 bg-card border border-border/60 rounded-2xl overflow-hidden shadow-2xl animate-fade-in-scale"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <div className="flex items-center justify-between p-5 border-b border-border/40">
               <div className="flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -84,10 +85,16 @@ export function ThematicAxisCard({ axis, index }: ThematicAxisCardProps) {
               </button>
             </div>
 
-            {/* Content */}
             <div className="p-5 space-y-3">
               {axis.topics.map((topic, i) => (
-                <TopicCard key={i} topic={topic} index={i} />
+                <TopicCard
+                  key={i}
+                  topic={topic}
+                  index={i}
+                  favoritos={favoritos}
+                  onToggleFavorito={onToggleFavorito}
+                  axisId={axisId}
+                />
               ))}
             </div>
           </div>

@@ -7,9 +7,12 @@ import { cn } from "@/lib/utils";
 interface TopicCardProps {
   topic: Topic;
   index: number;
+  favoritos: string[];
+  onToggleFavorito: (id: string) => void;
+  axisId: string;
 }
 
-export function TopicCard({ topic, index }: TopicCardProps) {
+export function TopicCard({ topic, index, favoritos, onToggleFavorito, axisId }: TopicCardProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -44,7 +47,13 @@ export function TopicCard({ topic, index }: TopicCardProps) {
 
       {isOpen && (
         <div className="animate-fade-in border-t border-border/30">
-          <RepertoireTable repertoires={topic.repertoires} />
+          <RepertoireTable
+            repertoires={topic.repertoires}
+            favoritos={favoritos}
+            onToggleFavorito={onToggleFavorito}
+            axisId={axisId}
+            topicName={topic.name}
+          />
         </div>
       )}
     </div>
