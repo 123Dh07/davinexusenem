@@ -1,15 +1,23 @@
 import { useState } from "react";
 import { ThematicAxisCard } from "@/components/ThematicAxisCard";
 import { IntroSection } from "@/components/IntroSection";
-import { thematicAxes } from "@/data/enemData";
-import { BookOpen, LayoutGrid, Search, Heart, BookCheck } from "lucide-react";
+import { Essays } from "@/pages/Essays";
+import { MyEssays } from "@/pages/MyEssays";
+import { thematicAxes, categoryLabels, RepertoireCategory } from "@/data/enemData";
+import { BookOpen, LayoutGrid, Search, Heart, BookCheck, FileText, PenLine } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Tab = "intro" | "repertorios" | "favoritos";
+type Tab = "intro" | "repertorios" | "favoritos" | "redacoes" | "minhasredacoes";
+
+const categorias = Object.entries(categoryLabels).map(([key, val]) => ({
+  key: key as RepertoireCategory,
+  ...val,
+}));
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState<Tab>("intro");
   const [busca, setBusca] = useState("");
+  const [categoriaFiltro, setCategoriaFiltro] = useState<RepertoireCategory | "todas">("todas");
 
   const [favoritos, setFavoritos] = useState<string[]>(() => {
     const saved = localStorage.getItem("nexus_favoritos");
@@ -46,29 +54,38 @@ const Index = () => {
     ? Math.round((estudados.length / totalRepertoires) * 100)
     : 0;
 
-  const axesFiltrados = busca.trim() === "" ? thematicAxes : thematicAxes.map(axis => ({
-    ...axis,
-    topics: axis.topics.map(topic => ({
-      ...topic,
-      repertoires: topic.repertoires.filter(rep =>
-        rep.title.toLowerCase().includes(busca.toLowerCase()) ||
-        rep.description.toLowerCase().includes(busca.toLowerCase()) ||
-        rep.paragraphModel.toLowerCase().includes(busca.toLowerCase()) ||
-        topic.name.toLowerCase().includes(busca.toLowerCase()) ||
-        axis.name.toLowerCase().includes(busca.toLowerCase())
-      )
-    })).filter(topic => topic.repertoires.length > 0)
-  })).filter(axis => axis.topics.length > 0);
+  const aplicarFiltros = (axes: typeof thematicAxes) => {
+    return axes.map(axis => ({
+      ...axis,
+      topics: axis.topics.map(topic => ({
+        ...topic,
+        repertoires: topic.repertoires.filter(rep => {
+          const matchBusca = busca.trim() === "" ||
+            rep.title.toLowerCase().includes(busca.toLowerCase()) ||
+            rep.description.toLowerCase().includes(busca.toLowerCase()) ||
+            rep.paragraphModel.toLowerCase().includes(busca.toLowerCase()) ||
+            topic.name.toLowerCase().includes(busca.toLowerCase()) ||
+            axis.name.toLowerCase().includes(busca.toLowerCase());
+          const matchCategoria = categoriaFiltro === "todas" || rep.category === categoriaFiltro;
+          return matchBusca && matchCategoria;
+        })
+      })).filter(topic => topic.repertoires.length > 0)
+    })).filter(axis => axis.topics.length > 0);
+  };
 
-  const axesFavoritos = thematicAxes.map(axis => ({
-    ...axis,
-    topics: axis.topics.map(topic => ({
-      ...topic,
-      repertoires: topic.repertoires.filter((_, i) =>
-        favoritos.includes(`${axis.id}-${topic.name}-${i}`)
-      )
-    })).filter(topic => topic.repertoires.length > 0)
-  })).filter(axis => axis.topics.length > 0);
+  const axesFiltrados = aplicarFiltros(thematicAxes);
+
+  const axesFavoritos = aplicarFiltros(
+    thematicAxes.map(axis => ({
+      ...axis,
+      topics: axis.topics.map(topic => ({
+        ...topic,
+        repertoires: topic.repertoires.filter((_, i) =>
+          favoritos.includes(`${axis.id}-${topic.name}-${i}`)
+        )
+      })).filter(topic => topic.repertoires.length > 0)
+    })).filter(axis => axis.topics.length > 0)
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -120,6 +137,30 @@ const Index = () => {
               <span className="hidden sm:inline">Repertórios</span>
             </button>
             <button
+              onClick={() => setActiveTab("redacoes")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all duration-200",
+                activeTab === "redacoes"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Redações</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("minhasredacoes")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all duration-200",
+                activeTab === "minhasredacoes"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <PenLine className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Minhas Redações</span>
+            </button>
+            <button
               onClick={() => setActiveTab("favoritos")}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[13px] font-medium transition-all duration-200",
@@ -138,7 +179,6 @@ const Index = () => {
             </button>
           </div>
 
-          {/* Progresso geral */}
           <div className="hidden sm:flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <span className="px-2.5 py-1 rounded-md bg-secondary">
@@ -157,7 +197,6 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Barra de progresso geral */}
         {estudados.length > 0 && (
           <div className="w-full h-0.5 bg-secondary">
             <div
@@ -172,66 +211,96 @@ const Index = () => {
       <main className="max-w-5xl mx-auto px-6 py-16 relative">
         {activeTab === "intro" ? (
           <IntroSection onGoToRepertorios={() => setActiveTab("repertorios")} />
-        ) : activeTab === "favoritos" ? (
-          <div className="space-y-8">
-            <div className="text-center max-w-xl mx-auto space-y-4 opacity-0 animate-fade-in">
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight" style={{ lineHeight: "1.1" }}>
-                Meus <span className="text-gradient">Favoritos</span>
-              </h2>
-              <p className="text-[14px] text-muted-foreground leading-relaxed">
-                {favoritos.length} repertórios salvos
-              </p>
-            </div>
-            {axesFavoritos.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <Heart className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                <p className="text-[15px]">Nenhum favorito ainda.</p>
-                <p className="text-[13px] mt-1 opacity-70">Clique no ❤️ dentro de um repertório para salvar.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {axesFavoritos.map((axis, i) => (
-                  <ThematicAxisCard
-                    key={axis.id}
-                    axis={axis}
-                    index={i}
-                    favoritos={favoritos}
-                    onToggleFavorito={toggleFavorito}
-                    estudados={estudados}
-                    onToggleEstudado={toggleEstudado}
-                    axisId={axis.id}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+        ) : activeTab === "redacoes" ? (
+          <Essays />
+        ) : activeTab === "minhasredacoes" ? (
+          <MyEssays />
         ) : (
           <div className="space-y-8">
             <div className="text-center max-w-xl mx-auto space-y-4 opacity-0 animate-fade-in">
               <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight" style={{ lineHeight: "1.1" }}>
-                Banco de <span className="text-gradient">Repertórios</span>
+                {activeTab === "favoritos" ? (
+                  <>Meus <span className="text-gradient">Favoritos</span></>
+                ) : (
+                  <>Banco de <span className="text-gradient">Repertórios</span></>
+                )}
               </h2>
               <p className="text-[14px] text-muted-foreground leading-relaxed">
-                {thematicAxes.length} eixos temáticos · {totalTopics} temas · {totalRepertoires} repertórios prontos
+                {activeTab === "favoritos"
+                  ? `${favoritos.length} repertórios salvos`
+                  : `${thematicAxes.length} eixos temáticos · ${totalTopics} temas · ${totalRepertoires} repertórios prontos`
+                }
               </p>
             </div>
 
-            {/* Campo de busca */}
-            <div className="relative max-w-md mx-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Buscar repertório, tema ou filósofo..."
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary/80 border border-border/40 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
-              />
+            <div className="space-y-3 max-w-2xl mx-auto">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <input
+                  type="text"
+                  placeholder="Buscar repertório, tema ou filósofo..."
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-secondary/80 border border-border/40 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center">
+                <button
+                  onClick={() => setCategoriaFiltro("todas")}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-200 border",
+                    categoriaFiltro === "todas"
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary/60 text-muted-foreground border-border/40 hover:border-primary/30 hover:text-foreground"
+                  )}
+                >
+                  Todas
+                </button>
+                {categorias.map(cat => (
+                  <button
+                    key={cat.key}
+                    onClick={() => setCategoriaFiltro(cat.key)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-200 border",
+                      categoriaFiltro === cat.key
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-secondary/60 text-muted-foreground border-border/40 hover:border-primary/30 hover:text-foreground"
+                    )}
+                  >
+                    {cat.emoji} {cat.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {axesFiltrados.length === 0 ? (
+            {activeTab === "favoritos" ? (
+              axesFavoritos.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">
+                  <Heart className="w-12 h-12 mx-auto mb-4 opacity-20" />
+                  <p className="text-[15px]">Nenhum favorito ainda.</p>
+                  <p className="text-[13px] mt-1 opacity-70">Clique no ❤️ dentro de um repertório para salvar.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {axesFavoritos.map((axis, i) => (
+                    <ThematicAxisCard
+                      key={axis.id}
+                      axis={axis}
+                      index={i}
+                      favoritos={favoritos}
+                      onToggleFavorito={toggleFavorito}
+                      estudados={estudados}
+                      onToggleEstudado={toggleEstudado}
+                      axisId={axis.id}
+                    />
+                  ))}
+                </div>
+              )
+            ) : axesFiltrados.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground">
                 <Search className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                <p className="text-[15px]">Nenhum resultado para "{busca}"</p>
+                <p className="text-[15px]">Nenhum resultado encontrado.</p>
+                <p className="text-[13px] mt-1 opacity-70">Tente outro termo ou categoria.</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
