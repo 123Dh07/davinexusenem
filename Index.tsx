@@ -53,26 +53,7 @@ const Index = () => {
     ? Math.round((estudados.length / totalRepertoires) * 100)
     : 0;
 
-  const aplicarFiltros = (axes: typeof thematicAxes) => {
-    return axes.map(axis => ({
-      ...axis,
-      topics: axis.topics.map(topic => ({
-        ...topic,
-        repertoires: topic.repertoires.filter(rep => {
-          const matchBusca = busca.trim() === "" ||
-            rep.title.toLowerCase().includes(busca.toLowerCase()) ||
-            rep.description.toLowerCase().includes(busca.toLowerCase()) ||
-            rep.paragraphModel.toLowerCase().includes(busca.toLowerCase()) ||
-            topic.name.toLowerCase().includes(busca.toLowerCase()) ||
-            axis.name.toLowerCase().includes(busca.toLowerCase());
-          const matchCategoria = categoriaFiltro === "todas" || rep.category === categoriaFiltro;
-          return matchBusca && matchCategoria;
-        })
-      })).filter(topic => topic.repertoires.length > 0)
-    })).filter(axis => axis.topics.length > 0);
-  };
-
-  const axesFiltrados = aplicarFiltros(thematicAxes);
+ const axesFiltrados = aplicarFiltros(thematicAxes);
 
   const axesFavoritos = aplicarFiltros(
     thematicAxes.map(axis => ({
@@ -85,7 +66,6 @@ const Index = () => {
       })).filter(topic => topic.repertoires.length > 0)
     })).filter(axis => axis.topics.length > 0)
   );
-
   return (
     <div className="min-h-screen bg-background">
       <div
