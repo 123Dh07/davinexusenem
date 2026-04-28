@@ -2,63 +2,87 @@ import { useState, useEffect, useRef } from "react";
 import { PenLine, Trash2, ChevronDown, ChevronUp, Star, X, Trophy, TrendingUp, AlertCircle, Save, ClipboardCheck, Sparkles, Loader2, Bot, Highlighter, Lightbulb, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const GROQ_API_KEY = "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";
+// INSTRUÇÕES: cole sua chave do Gemini entre as aspas abaixo
+// Acesse https://aistudio.google.com/apikey para criar uma chave gratuita
+const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY ?? "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";
+const PROMPT_SISTEMA = `Você é corretor do ENEM. Responda SOMENTE com JSON válido, sem texto antes ou depois.
 
-const PROMPT_CORRECAO = `Você é um corretor oficial do ENEM. Corrija a redação abaixo seguindo a matriz do INEP.
+NOTAS: apenas 0, 40, 80, 120, 160 ou 200. notaTotal = soma exata das 5 notas.
 
-REGRAS OBRIGATÓRIAS:
-1. Notas APENAS: 0, 40, 80, 120, 160 ou 200 por competência.
-2. Responda SOMENTE com o JSON abaixo, sem nenhum texto fora dele.
-3. Em CADA competência com nota abaixo de 200, identifique OBRIGATORIAMENTE 1 ou 2 trechos problemáticos reais do texto.
-4. Se a nota for 200, coloque trechos = [].
-5. palavraSubstituta OBRIGATÓRIO em todo trecho: "palavra_errada → palavra_correta".
-6. opcoesPalavras OBRIGATÓRIO em todo trecho: lista de 4 a 6 palavras ou expressões alternativas que o aluno PODERIA ter usado no lugar da palavra/trecho errado. Exemplo: se o erro é usar "mas" repetidamente, opcoesPalavras = ["entretanto", "porém", "contudo", "todavia", "no entanto"]. Se o erro é vocabular informal, liste palavras formais equivalentes.
-7. Não marque como erro: conectivos corretos, palavras formais adequadas, pontuação correta.
+━━━ ÂNCORAS DE CALIBRAÇÃO — compare a redação com estes exemplos ━━━
 
-COMPETÊNCIA 1 – Norma culta
-Avalie ortografia, concordância, regência, pontuação, sintaxe.
-Formalidade: "Formalidade satisfatória" / "Formalidade parcial" / "Formalidade insuficiente".
-sugestaoMelhoria: dica prática e específica para melhorar a norma culta desta redação.
+REDAÇÃO 600pts — perfil típico de nota baixa:
+• CF citada sem artigo específico (ex: "A CF estabelece que educação é direito de todos")
+• Sem repertório sociocultural real (filósofo, dado com número, obra)
+• Argumentação descritiva: descreve o problema mas não analisa causa-consequência
+• Sem conclusão parcial nos parágrafos de desenvolvimento
+• Proposta com "é necessário", "deve-se", "a sociedade deve" = agente implícito
+→ C1:120 C2:80 C3:80 C4:160 C5:80 = 520
 
-COMPETÊNCIA 2 – Tema e estrutura dissertativa
-A introdução precisa ter: (a) repertório sociocultural explícito, (b) tese clara, (c) duas antecipações argumentativas.
-Parcial = desconto mínimo 40pts. Insuficiente = desconto mínimo 80pts.
-sugestaoMelhoria: dica concreta de como melhorar a introdução desta redação.
+REDAÇÃO 680pts — perfil mediano:
+• CF citada sem artigo OU autor sem obra específica (ex: "Paulo Freire defende que...")
+• Argumentação presente mas superficial, sem dados concretos
+• Parágrafos sem conclusão parcial clara
+• 1 proposta com agente válido (MEC, governo federal) mas meio genérico
+• 1 proposta com agente implícito
+→ C1:160 C2:120 C3:120 C4:160 C5:120 = 680
 
-COMPETÊNCIA 3 – Argumentação
-Cada parágrafo de desenvolvimento precisa: (a) explicar a antecipação, (b) usar repertório sociocultural, (c) ter conclusão.
-Parcial = desconto mínimo 40pts. Insuficiente = desconto mínimo 80pts.
-sugestaoMelhoria: dica concreta de como melhorar os argumentos desta redação.
+REDAÇÃO 840pts — perfil bom:
+• Autor + conceito + aplicação ao tema (mesmo sem obra específica)
+• OU dado concreto com fonte (INEP, IBGE + número)
+• Argumentação com causa-consequência e alguma conclusão parcial
+• 2 propostas com agente explícito (MEC, governo federal por meio de...)
+• Meio e finalidade presentes
+→ C1:160 C2:160 C3:160 C4:160 C5:160 = 800
 
-COMPETÊNCIA 4 – Coesão e conectivos
-Avalie conectivos intra e interparágrafo, progressão lógica, coesão.
-NÃO penalize: "além disso", "porém", "entretanto", "nesse sentido" quando usados corretamente.
-Penalize: ausência de conectivos, repetição excessiva, conectivos inadequados.
-sugestaoMelhoria: indique conectivos específicos que faltam nesta redação.
+REDAÇÃO 920pts — perfil forte:
+• Autor + OBRA ESPECÍFICA + conceito + aplicação precisa
+• OU dado com número exato e fonte concreto
+• Parágrafos com conceituação + repertório + conclusão parcial clara
+• 2 propostas completas: agente explícito + ação + meio + finalidade + detalhamento
+→ C1:200 C2:180 C3:180 C4:200 C5:160 = 920
 
-COMPETÊNCIA 5 – Proposta de intervenção
-Precisa de DUAS propostas com: agente EXPLÍCITO + ação + meio + finalidade + detalhamento.
-Agente implícito = inválido. Sem ação explícita = máximo 80pts.
-sugestaoMelhoria: dica de como completar a proposta de intervenção desta redação.
+━━━ REGRAS POR COMPETÊNCIA ━━━
 
-FORMATO DOS TRECHOS (obrigatório quando nota < 200):
-- original: copie EXATAMENTE do texto (máximo 8 palavras)
-- problema: nome técnico do erro (ex: "concordância verbal", "coloquialismo", "conectivo inadequado")
-- sugestao: reescrita completa e corrigida daquele trecho
-- palavraSubstituta: OBRIGATÓRIO — "termo_errado → termo_correto"
-- opcoesPalavras: OBRIGATÓRIO — array com 4 a 6 palavras/expressões alternativas que o aluno poderia usar. Exemplos reais e variados.
+C1: 200=impecável | 160=1-2 erros leves | 120=erros frequentes | 80=graves
+NUNCA marque: "nesse contexto", "torna-se", voz passiva sintética, conectivos formais
 
-Responda APENAS com este JSON válido, sem markdown, sem texto fora:
-{
-  "competencia1": { "nota": 0, "comentario": "", "formalidade": "", "sugestaoMelhoria": "", "trechos": [{"original": "", "problema": "", "sugestao": "", "palavraSubstituta": "", "opcoesPalavras": ["", "", "", ""]}] },
-  "competencia2": { "nota": 0, "comentarioGeral": "", "comentarioIntroducao": "", "sugestaoMelhoria": "", "trechos": [{"original": "", "problema": "", "sugestao": "", "palavraSubstituta": "", "opcoesPalavras": ["", "", "", ""]}] },
-  "competencia3": { "nota": 0, "comentarioGeral": "", "comentarioDesenvolvimento": "", "sugestaoMelhoria": "", "trechos": [{"original": "", "problema": "", "sugestao": "", "palavraSubstituta": "", "opcoesPalavras": ["", "", "", ""]}] },
-  "competencia4": { "nota": 0, "comentario": "", "sugestaoMelhoria": "", "trechos": [{"original": "", "problema": "", "sugestao": "", "palavraSubstituta": "", "opcoesPalavras": ["", "", "", ""]}] },
-  "competencia5": { "nota": 0, "comentario": "", "sugestaoMelhoria": "", "trechos": [{"original": "", "problema": "", "sugestao": "", "palavraSubstituta": "", "opcoesPalavras": ["", "", "", ""]}] },
-  "notaTotal": 0,
-  "comentarioGeral": "",
-  "geradoPorIA": false
-}`;
+C2: avalie a INTRODUÇÃO
+200 = repertório válido (autor+obra+conceito+aplicação OU dado com número+fonte) + tese + 2 antecipações
+160 = repertório fraco (autor+conceito SEM obra) + tese + 2 antecipações
+120 = CF sem artigo específico OU falta 1 elemento estrutural
+80  = sem repertório OU falta 2+ elementos
+
+C3: avalie os PARÁGRAFOS DE DESENVOLVIMENTO
+200 = conceituação + repertório/dado + conclusão parcial em ambos
+160 = estrutura presente, pequena falha na conclusão parcial
+120 = sem conclusão parcial OU sem repertório em algum parágrafo
+80  = descritivo e superficial, sem análise
+
+C4: 200=conectivos variados | 160=boa coesão | 120=repetitivo | 80=truncado
+Penalize APENAS conectivo repetido 3+ vezes
+
+C5: avalie a CONCLUSÃO
+200 = 2 propostas: agente explícito + ação + meio + finalidade + detalhamento
+160 = 2 propostas com agente explícito + ação + finalidade (meio genérico)
+120 = 1 proposta completa + 1 incompleta OU agente genérico em 1
+80  = "deve-se", "é necessário", "a sociedade deve" = agente implícito → máximo 80
+
+━━━ TRECHOS ━━━
+Gere SEMPRE 3 a 5 trechos com problemas ou pontos a melhorar.
+Trechos de C2: marque quando CF for citada sem artigo OU autor sem obra OU ausência de repertório
+Trechos de C3: marque quando parágrafo for apenas descritivo sem conclusão parcial
+Trechos de C5: marque quando agente for implícito ou proposta for genérica
+- original: copie EXATAMENTE do texto (máx 7 palavras)
+- problema: explique de forma didática o que falta ou está errado
+- sugestao: mostre como reescrever melhor
+- palavraSubstituta: "errado → correto" se houver palavra específica, senão ""
+- opcoesPalavras: 3 alternativas, senão []
+
+FORMATO JSON:
+{"competencia1":{"nota":0,"comentario":"","formalidade":"","sugestaoMelhoria":"","trechos":[{"original":"","problema":"","sugestao":"","palavraSubstituta":"","opcoesPalavras":[]}]},"competencia2":{"nota":0,"comentarioGeral":"","comentarioIntroducao":"","sugestaoMelhoria":"","trechos":[{"original":"","problema":"","sugestao":"","palavraSubstituta":"","opcoesPalavras":[]}]},"competencia3":{"nota":0,"comentarioGeral":"","comentarioDesenvolvimento":"","sugestaoMelhoria":"","trechos":[{"original":"","problema":"","sugestao":"","palavraSubstituta":"","opcoesPalavras":[]}]},"competencia4":{"nota":0,"comentario":"","sugestaoMelhoria":"","trechos":[]},"competencia5":{"nota":0,"comentario":"","sugestaoMelhoria":"","trechos":[{"original":"","problema":"","sugestao":"","palavraSubstituta":"","opcoesPalavras":[]}]},"notaTotal":0,"comentarioGeral":"","geradoPorIA":false}`;
+
+const PROMPT_CORRECAO = "";
 
 const COMP_COLORS = {
   competencia1: { bg: "rgba(59,130,246,0.25)", border: "rgba(59,130,246,0.6)", text: "#93c5fd", label: "C1", name: "Norma culta" },
@@ -447,22 +471,30 @@ export function MyEssays() {
     setCorrigindoIA(redacao.id);
     setErroIA(null);
     try {
-      const prompt = `${PROMPT_CORRECAO}\n\nTema: ${redacao.tema}\n\nRedação:\n${redacao.texto}`;
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const userPrompt = `Tema: ${redacao.tema}\n\nRedação:\n${redacao.texto}`;
+      let rawText = "";
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${GROQ_API_KEY}`,
+          "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+          "HTTP-Referer": "https://nexusenem.com",
+          "X-Title": "Nexus ENEM",
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          temperature: 0,
-          max_tokens: 6000,
-          messages: [{ role: "user", content: prompt }],
+          model: "openrouter/auto",
+          temperature: 0.1,
+          max_tokens: 4000,
+          messages: [
+            { role: "system", content: PROMPT_SISTEMA },
+            { role: "user", content: userPrompt },
+          ],
         }),
       });
+      if (res.status === 429) throw new Error("Limite atingido. Aguarde alguns segundos.");
       const data = await res.json();
-      const rawText = data.choices?.[0]?.message?.content || "";
+      if (data.error) throw new Error(data.error.message || "Erro na API");
+      rawText = data.choices?.[0]?.message?.content || "";
       // Extrai o JSON mesmo se vier com texto ao redor
       const jsonMatch = rawText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error("JSON não encontrado na resposta");
@@ -471,15 +503,21 @@ export function MyEssays() {
 
       // Normaliza trechos (aceita string antiga ou objeto novo)
       const normTrechos = (arr: any[]): TrechoCorrecao[] =>
-        (arr || []).map(t => typeof t === "string"
-          ? { original: t, problema: "Problema identificado.", sugestao: "Revise este trecho.", palavraSubstituta: "", opcoesPalavras: [] }
-          : { palavraSubstituta: "", opcoesPalavras: [], ...t });
+        (arr || [])
+          .filter((t: any) => {
+            const orig = typeof t === "string" ? t : t?.original;
+            return orig && orig.trim().length > 3;
+          })
+          .map((t: any) => typeof t === "string"
+            ? { original: t, problema: "Problema identificado.", sugestao: "Revise este trecho.", palavraSubstituta: "", opcoesPalavras: [] }
+            : { palavraSubstituta: "", opcoesPalavras: [], ...t });
 
       const correcao: Correcao = {
         competencia1: {
-          nota: parsed.competencia1.nota,
-          comentario: parsed.competencia1.comentario,
-          formalidade: parsed.competencia1.formalidade,
+          nota: parsed.competencia1.nota || 0,
+          comentario: parsed.competencia1.comentario || "",
+          formalidade: parsed.competencia1.formalidade || "Formalidade satisfatória",
+          sugestaoMelhoria: parsed.competencia1.sugestaoMelhoria || "",
           trechos: normTrechos(parsed.competencia1.trechos),
         },
         competencia2: {
@@ -508,7 +546,7 @@ export function MyEssays() {
           sugestaoMelhoria: parsed.competencia5.sugestaoMelhoria,
           trechos: normTrechos(parsed.competencia5.trechos),
         },
-        notaTotal: parsed.notaTotal,
+        notaTotal: (parsed.competencia1.nota || 0) + (parsed.competencia2.nota || 0) + (parsed.competencia3.nota || 0) + (parsed.competencia4.nota || 0) + (parsed.competencia5.nota || 0),
         comentarioGeral: parsed.comentarioGeral,
         geradoPorIA: parsed.geradoPorIA || false,
         corrigidoPor: "ia",
@@ -721,8 +759,19 @@ export function MyEssays() {
                 </div>
                 <textarea value={texto} onChange={(e) => setTexto(e.target.value)}
                   placeholder={"Escreva sua redação aqui...\n\nLembre-se da estrutura:\n• Introdução\n• 1º Desenvolvimento\n• 2º Desenvolvimento\n• Conclusão com proposta de intervenção"}
-                  className="w-full h-80 text-[14px] text-gray-800 leading-[2] resize-none focus:outline-none placeholder:text-gray-300"
-                  style={{ backgroundImage: "repeating-linear-gradient(transparent, transparent 31px, #e5e7eb 31px, #e5e7eb 32px)", lineHeight: "32px", paddingTop: "4px" }} />
+                  style={{
+                    width: "100%",
+                    height: 420,
+                    fontSize: 15,
+                    color: "#1e293b",
+                    lineHeight: "32px",
+                    resize: "none",
+                    outline: "none",
+                    background: "transparent",
+                    backgroundImage: "repeating-linear-gradient(transparent, transparent 31px, #e5e7eb 31px, #e5e7eb 32px)",
+                    paddingTop: "4px",
+                    fontFamily: "Georgia, serif",
+                  }} />
               </div>
               <div className="px-5 pb-5">
                 <button onClick={salvarRedacao} disabled={!temaFinal || !texto || !nome || palavras < 50} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-blue-900 text-white font-semibold text-[14px] hover:bg-blue-800 transition-all disabled:opacity-40">

@@ -232,7 +232,17 @@ const Index = () => {
   const [busca, setBusca] = useState("");
   const [categoriaFiltro, setCategoriaFiltro] = useState<RepertoireCategory | "todas">("todas");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem("nexus_theme");
+    const isDark = saved !== "light";
+    // Aplica imediatamente no load
+    if (isDark) {
+      document.documentElement.classList.remove("light");
+    } else {
+      document.documentElement.classList.add("light");
+    }
+    return isDark;
+  });
   const [verEstudados, setVerEstudados] = useState(false);
 
   const [favoritos, setFavoritos] = useState<string[]>(() => {
@@ -466,7 +476,19 @@ const progressoGeral = totalRepertoires > 0 ? Math.round((estudadosValidos.lengt
             )}
             {/* Botão modo claro/escuro */}
             <button
-              onClick={() => setDarkMode(d => !d)}
+              onClick={() => {
+                setDarkMode(d => {
+                  const newMode = !d;
+                  localStorage.setItem("nexus_theme", newMode ? "dark" : "light");
+                  const html = document.documentElement;
+                  if (newMode) {
+                    html.classList.remove("light");
+                  } else {
+                    html.classList.add("light");
+                  }
+                  return newMode;
+                });
+              }}
               style={{ width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: itemBg, border: `1px solid ${inputBorder}`, cursor: "pointer", transition: "all 0.2s" }}
               title={darkMode ? "Modo claro" : "Modo escuro"}
             >
@@ -486,7 +508,7 @@ const progressoGeral = totalRepertoires > 0 ? Math.round((estudadosValidos.lengt
             ) : activeTab === "intro" ? (
               <>
                 <TabHero item={activeNavItem} darkMode={darkMode} />
-                <IntroSection onGoToRepertorios={() => handleNav("repertorios")} />
+                <IntroSection onGoToRepertorios={() => handleNav("repertorios")} darkMode={darkMode} />
               </>
             ) : activeTab === "redacoes" ? (
               <>
@@ -496,7 +518,7 @@ const progressoGeral = totalRepertoires > 0 ? Math.round((estudadosValidos.lengt
             ) : activeTab === "minhasredacoes" ? (
               <>
                 <TabHero item={activeNavItem} darkMode={darkMode} />
-                <MyEssays />
+                <MyEssays darkMode={darkMode} />
               </>
             ) : (
               <div>
